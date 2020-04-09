@@ -1,0 +1,7 @@
+{
+  "name": "plavit",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "repository": "git@github.com:the-via/plavit.git",
+  "author": "Olivia Briggs <ofbriggs@gmail.com>"
+}

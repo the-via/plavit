@@ -1,0 +1,14 @@
+[
+  [
+    "Menu 1",
+    [
+      ["?", ["=", [".", 7], 0], [], []],
+      [7, "Layer Color", "color"],
+      [8, "Layer should change color", "slider"],
+      [9, ["Color Brightness", 0, 10], "range"],
+      [10, ["Some Selection", "Option 1", "Option 2", "Option 3"], "select"],
+      [11, "Code when special button hit", "keycode"]
+    ]
+  ],
+  ["Menu 2", []]
+]
