@@ -3,7 +3,44 @@ export enum Type {
   N = "number",
   B = "boolean",
   S = "string",
+  T = "tuple",
+  L = "list"
 }
+
+export enum CompoundType {
+    T = "tuple",
+    L = "list"
+}
+
+function isExpr(expr) {
+    return Array.isArray(expr) && isOperator(expr[0]) && !isDefinition(expr[0]);
+}
+
+function isDefinition(expr) {
+    if (Array.isArray(expr) && !isOperator(expr[0])) {
+        switch (expr[0]) {
+            case '@t': {
+                return CompoundType.T;
+            }
+            case '@l': {
+                // list must have homogenous types for its elements
+                return validate(expr.slice(1), getType(expr[1]));
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
+function isOperator(op) {
+    return operators.hasOwnProperty(op);
+}
+
+    function getType(expr) {
+        return isExpr(expr) ? operators[expr[0]] : isDefinition(expr) ? expr[0] === '@t' ? [expr[0], ...expr.slice(1).map(getType)] : [expr[0], getType(expr[1])] : typeof expr;
+    }
 
 const operators = {
   // Numerical Operators
