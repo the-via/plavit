@@ -1,10 +1,17 @@
+export enum PrimitiveType {
+  N = 'number',
+  B = 'boolean',
+  S = 'string',
+}
+
 export enum Type {
-  F = 'function',
+  I = 'instr',
   N = 'number',
   B = 'boolean',
   S = 'string',
   T = 'tuple',
   L = 'list',
+  Error = 'error',
 }
 
 export enum CompoundType {
@@ -12,7 +19,7 @@ export enum CompoundType {
   L = 'list',
 }
 
-function isExpr(expr: any): boolean {
+function isExpr<S extends Operator>(expr: unknown): expr is [S, ...Type[]] {
   return Array.isArray(expr) && isOperator(expr[0]) && !isDefinition(expr[0]);
 }
 
@@ -24,7 +31,7 @@ function isDefinition(expr: any): boolean {
       }
       case '@l': {
         // list must have homogenous types for its elements
-        return validate(expr.slice(1), getType(expr[1]));
+        return expr.slice(1).every((e) => validate(e, getType(expr[1])));
       }
       default: {
         return false;
@@ -34,18 +41,26 @@ function isDefinition(expr: any): boolean {
   return false;
 }
 
-function isOperator(op: any) {
+function isOperator(op: string | Operator): op is Operator {
   return operators.hasOwnProperty(op);
 }
 
-function getType(expr: any): any {
-  return isExpr(expr)
-    ? operators[expr[0] as Operator]
-    : isDefinition(expr)
-    ? expr[0] === '@t'
-      ? [expr[0], ...expr.slice(1).map(getType)]
-      : [expr[0], getType(expr[1])]
-    : typeof expr;
+export function getType(expr: unknown): any {
+  if (Array.isArray(expr)) {
+    return isOperator(expr[0])
+      ? [Type.I, ...expr.slice(1).map(getType)]
+      : isDefinition(expr)
+      ? expr[0] === '@t'
+        ? [Type.T, ...expr.slice(1).map(getType)]
+        : [Type.L, getType(expr[1])]
+      : Type.Error;
+  } else if (typeof expr === 'string' && isOperator(expr)) {
+    return Type.I;
+  }
+  if ([Type.N, Type.B, Type.S].includes(typeof expr as any)) {
+    return typeof expr;
+  }
+  return Type.Error;
 }
 
 const operators = {
@@ -71,9 +86,11 @@ const operators = {
   ':?n': [Type.B, Type.N, Type.N, Type.N],
   ':?s': [Type.B, Type.S, Type.S, Type.S],
   ':?b': [Type.B, Type.B, Type.B, Type.B],
-  ':?f': [Type.B, Type.F, Type.F, Type.F],
+  ':?i': [Type.B, Type.I, Type.I, Type.I],
 };
 type Operator = keyof typeof operators;
+type OperatorExprArgs<S extends Operator> = typeof operators[S];
+
 export function validate(expr: unknown, type?: Type): boolean {
   // Validate operator, arguments and return type
   if (Array.isArray(expr)) {
@@ -93,7 +110,7 @@ export function validate(expr: unknown, type?: Type): boolean {
   }
 
   const typeComparison =
-    type === undefined ? [Type.F, Type.N, Type.B, Type.S].includes(typeof expr as Type) : typeof expr === type;
+    type === undefined ? [Type.I, Type.N, Type.B, Type.S].includes(typeof expr as Type) : typeof expr === type;
   if (!typeComparison) {
     console.error(expr, 'is not of type:', type);
   }

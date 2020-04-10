@@ -1,6 +1,6 @@
 const { version } = require('../package.json');
 const readline = require('readline');
-import { validate, Type } from './instr';
+import { validate, getType, Type } from './instr';
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -17,6 +17,7 @@ rl.on('line', (line: string) => {
     if (endProgram) {
       expression += line.trimEnd().slice(0, -1);
       console.log('Validation: ', validate(JSON.parse(expression)));
+      console.log('Type tree: ', getType(JSON.parse(expression)));
       expression = '';
       rl.setPrompt('>> ');
       rl.prompt();
