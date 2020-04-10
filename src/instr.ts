@@ -12,15 +12,15 @@ export enum CompoundType {
   L = 'list',
 }
 
-function isExpr(expr: unknown) {
+function isExpr(expr: any): boolean {
   return Array.isArray(expr) && isOperator(expr[0]) && !isDefinition(expr[0]);
 }
 
-function isDefinition(expr: unknown) {
+function isDefinition(expr: any): boolean {
   if (Array.isArray(expr) && !isOperator(expr[0])) {
     switch (expr[0]) {
       case '@t': {
-        return CompoundType.T;
+        return true;
       }
       case '@l': {
         // list must have homogenous types for its elements
@@ -34,13 +34,13 @@ function isDefinition(expr: unknown) {
   return false;
 }
 
-function isOperator(op) {
+function isOperator(op: any) {
   return operators.hasOwnProperty(op);
 }
 
-function getType(expr) {
+function getType(expr: any): any {
   return isExpr(expr)
-    ? operators[expr[0]]
+    ? operators[expr[0] as Operator]
     : isDefinition(expr)
     ? expr[0] === '@t'
       ? [expr[0], ...expr.slice(1).map(getType)]

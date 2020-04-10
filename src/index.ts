@@ -1,4 +1,4 @@
-const { version } = require('./package.json');
+const { version } = require('../package.json');
 const readline = require('readline');
 import { validate, Type } from './instr';
 const rl = readline.createInterface({
